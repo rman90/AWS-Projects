@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Daily Agenda Infrastructure - Parent Stack
+  Orchestrates nested stacks to create modular, maintainable infrastructure.
+  Creates Network and Application stacks with proper dependency management.
+
+######################
+# Parameters section
+######################
+
+Parameters:
+  DailyAgendaParameterValue:
+    Type: String
+    Description: Comma-separated list of daily agenda items
+    Default: "Finish Q4 deliverables,Week 5 code review,Add MFA to production accounts,Update documentation"
+
+######################
+# Resources section
+######################
+
+Resources:
+  
+  # Network Stack - Creates VPC, Subnets, IGW, Route Tables
+  LabNetwork:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://templates-${AWS::AccountId}.s3.${AWS::Region}.amazonaws.com/network-stack.yaml'
+      Tags:
+        - Key: Name
+          Value: DailyAgenda-NetworkStack
+        - Key: Layer
+          Value: Network
+      TimeoutInMinutes: 10
+
+  # Application Stack - Creates EC2, Security Groups, Application Resources
+  LabApplication:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: LabNetwork
+    Properties:
+      TemplateURL: !Sub 'https://templates-${AWS::AccountId}.s3.${AWS::Region}.amazonaws.com/application-stack.yaml'
+      Parameters:
+        SubnetId: !GetAtt 'LabNetwork.Outputs.PublicSubnet'
+        VpcId: !GetAtt 'LabNetwork.Outputs.VPC'
+        DailyAgendaParameterValue: !Ref DailyAgendaParameterValue
+      Tags:
+        - Key: Name
+          Value: DailyAgenda-ApplicationStack
+        - Key: Layer
+          Value: Application
+      TimeoutInMinutes: 15
+
+######################
+# Outputs section
+######################
+
+Outputs:
+  URL:
+    Description: URL of the Daily Agenda website
+    Value: !GetAtt 'LabApplication.Outputs.URL'
+    Export:
+      Name: !Sub '${AWS::StackName}-URL'
+  
+  VPCId:
+    Description: VPC ID from Network Stack
+    Value: !GetAtt 'LabNetwork.Outputs.VPC'
+    Export:
+      Name: !Sub '${AWS::StackName}-VPC'
+  
+  PublicSubnetId:
+    Description: Public Subnet ID from Network Stack
+    Value: !GetAtt 'LabNetwork.Outputs.PublicSubnet'
+    Export:
+      Name: !Sub '${AWS::StackName}-PublicSubnet'
+  
+  NetworkStackName:
+    Description: Name of the Network nested stack
+    Value: !Ref LabNetwork
+  
+  ApplicationStackName:
+    Description: Name of the Application nested stack
+    Value: !Ref LabApplication

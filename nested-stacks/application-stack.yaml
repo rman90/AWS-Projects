@@ -1,0 +1,269 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Application Stack - Compute and Application Resources
+  Creates EC2 instance, Security Groups, SSM Parameters, and EBS volumes.
+  Deploys the Daily Agenda web application with Apache web server.
+
+######################
+# Parameters section
+######################
+
+Parameters:
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+    Description: Latest Amazon Linux 2 AMI ID from SSM Parameter Store
+  
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID from Network Stack
+  
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet ID from Network Stack
+  
+  DailyAgendaParameterName:
+    Type: String
+    Description: Name of the SSM Parameter for daily agenda
+    Default: /daily_agenda
+  
+  DailyAgendaParameterValue:
+    Type: String
+    Description: Comma-separated list of daily agenda items
+    Default: "Team standup,Code review,Deploy to production"
+
+######################
+# Resources section
+######################
+
+Resources:
+  
+  # SSM Parameter Store for Daily Agenda items
+  SsmParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Ref DailyAgendaParameterName
+      Type: StringList
+      Value: !Ref DailyAgendaParameterValue
+      Description: Daily agenda items for the web application
+      Tags:
+        ManagedBy: CloudFormation
+        Application: DailyAgenda
+
+  # Security Group for Web Server
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: DailyAgenda-WebServer-SG
+      GroupDescription: Security group allowing HTTP access to web server
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: Allow HTTP from anywhere
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: Allow HTTP outbound
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: Allow HTTPS outbound
+      Tags:
+        - Key: Name
+          Value: DailyAgenda-WebServer-SG
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # EC2 Instance for Web Server
+  WebServerInstance:
+    Type: AWS::EC2::Instance
+    Metadata:
+      'AWS::CloudFormation::Init':
+        configSets:
+          All:
+            - ConfigureSampleApp
+        ConfigureSampleApp:
+          env:
+            vars: 
+              REGION: !Ref AWS::Region
+          commands:
+            01_install_httpd: 
+              command: |
+                sudo yum update -y
+                sudo yum install -y httpd 
+              ignoreErrors: true
+            02_set_region_env_var: 
+              command: !Sub |
+                sudo sed -i '/^SetEnv REGION/d' /etc/httpd/conf/httpd.conf
+                sudo echo "SetEnv REGION ${AWS::Region}" | sudo tee -a /etc/httpd/conf/httpd.conf
+              ignoreErrors: true
+            03_start_httpd: 
+              command: |
+                sudo systemctl enable httpd
+                sudo systemctl start httpd
+              ignoreErrors: true
+          files:
+            /var/www/html/index.html:
+              content: |
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>AnyDepartment Daily Agenda</title>
+                    <style>
+                        .banner {
+                            width: 100%;
+                            max-height: 300px;
+                            object-fit: cover;
+                        }
+                    </style>
+                </head>
+                <body>
+                <header>
+                    <img src="https://aws-tc-largeobjects.s3.us-west-2.amazonaws.com/SPL-PW-200-CLO273-1/site_header.png" alt="Banner Image" class="banner">
+                </header>
+                <h1>Daily Agenda</h1>
+                <script>
+                  fetch('/content.php')
+                    .then(response => {
+                      console.log('Response status:', response.status);
+                      if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                      }
+                      return response.text();
+                    })
+                    .then(data => {
+                      console.log('SSM Parameter Value:', data);
+                      const div = document.createElement('div');
+                      div.innerHTML = data;
+                      document.body.appendChild(div);
+                    })
+                    .catch(error => {
+                      console.error('Error:', error);
+                    });
+                </script>
+                </body>
+                </html>
+              mode: '000644'
+              owner: apache
+              group: apache
+            /var/www/html/content.php:
+              content: !Sub |
+                <?php
+                error_log('Starting getSSMParameterValue');
+
+                $ssmParameterValue = getSSMParameterValue('${DailyAgendaParameterName}');
+                if ($ssmParameterValue === false) {
+                    error_log('Failed to retrieve SSM parameter value');
+                } else {
+                    $stringArray = explode(',', trim($ssmParameterValue, '"'));
+
+                    echo "<ul>";
+                    foreach ($stringArray as $item) {
+                        echo "<li>" . $item . "</li>";
+                    }
+                    echo "</ul>";
+                }
+
+                function getSSMParameterValue($parameterName) {
+                    $region = getenv('REGION');
+                    $command = "aws ssm get-parameter --name $parameterName --query 'Parameter.Value' --region $region --output text";
+                    $output = trim(shell_exec($command));
+                    return $output;
+                }
+                ?>
+              mode: '000644'
+              owner: apache
+              group: apache
+    Properties:
+      Tags:
+        - Key: Name
+          Value: daily-agenda-service
+        - Key: ManagedBy
+          Value: CloudFormation
+        - Key: Application
+          Value: DailyAgenda
+      IamInstanceProfile: ec2ssm
+      InstanceType: t2.micro
+      ImageId: !Ref LatestAmiId
+      NetworkInterfaces:
+        - GroupSet:
+            - !Ref WebServerSecurityGroup
+          AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          DeleteOnTermination: true
+          SubnetId: !Ref SubnetId
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          yum update -y aws-cfn-bootstrap
+          yum install -y php
+          # Install the files and packages from the metadata
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource WebServerInstance --configsets All --region ${AWS::Region}
+          # Signal the status from cfn-init
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource WebServerInstance --region ${AWS::Region}
+          aws configure set region ${AWS::Region}
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT5M
+
+  # EBS Volume for additional storage
+  DiskVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size: 100
+      AvailabilityZone: !GetAtt WebServerInstance.AvailabilityZone
+      Tags:
+        - Key: Name
+          Value: DailyAgenda-DataVolume
+        - Key: ManagedBy
+          Value: CloudFormation
+    DeletionPolicy: Delete
+  
+  # Attach EBS Volume to EC2 Instance
+  DiskMountPoint:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      InstanceId: !Ref WebServerInstance
+      VolumeId: !Ref DiskVolume
+      Device: /dev/sdh
+
+######################
+# Outputs section
+######################
+
+Outputs:
+  URL:
+    Description: URL of the Daily Agenda website
+    Value: !Sub 'http://${WebServerInstance.PublicDnsName}'
+    Export:
+      Name: !Sub '${AWS::StackName}-URL'
+  
+  InstanceId:
+    Description: EC2 Instance ID
+    Value: !Ref WebServerInstance
+    Export:
+      Name: !Sub '${AWS::StackName}-InstanceId'
+  
+  PublicDnsName:
+    Description: Public DNS name of the EC2 instance
+    Value: !GetAtt WebServerInstance.PublicDnsName
+    Export:
+      Name: !Sub '${AWS::StackName}-PublicDnsName'
+  
+  PublicIp:
+    Description: Public IP address of the EC2 instance
+    Value: !GetAtt WebServerInstance.PublicIp
+    Export:
+      Name: !Sub '${AWS::StackName}-PublicIp'
+  
+  SecurityGroupId:
+    Description: Security Group ID
+    Value: !Ref WebServerSecurityGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-SecurityGroup'

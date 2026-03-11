@@ -1,0 +1,131 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Network Stack - VPC Infrastructure
+  Creates VPC with DNS support, Internet Gateway, Public Subnet, and Route Tables.
+  This stack is designed to be reusable across multiple applications.
+
+######################
+# Resources section
+######################
+
+Resources:
+  
+  # VPC with DNS support enabled
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      CidrBlock: 10.0.0.0/16
+      Tags:
+        - Key: Name
+          Value: DailyAgenda-VPC
+        - Key: ManagedBy
+          Value: CloudFormation
+      
+  # Internet Gateway for public internet access
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: DailyAgenda-IGW
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # Attach Internet Gateway to VPC
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  
+  # Public Route Table
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: DailyAgenda-PublicRouteTable
+        - Key: ManagedBy
+          Value: CloudFormation
+  
+  # Route to Internet Gateway (0.0.0.0/0 -> IGW)
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  
+  # Public Subnet in first Availability Zone
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.0.0/24
+      AvailabilityZone: !Select 
+        - 0
+        - !GetAZs
+          Ref: AWS::Region
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: DailyAgenda-PublicSubnet
+        - Key: Type
+          Value: Public
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # Associate Subnet with Public Route Table
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+  
+  # Associate Default Network ACL with Public Subnet
+  PublicSubnetNetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      NetworkAclId: !GetAtt 
+        - VPC
+        - DefaultNetworkAcl
+
+######################
+# Outputs section
+######################
+
+Outputs:
+  VPC:
+    Description: VPC ID for use by other stacks
+    Value: !Ref VPC
+    Export:
+      Name: !Sub '${AWS::StackName}-VPC'
+  
+  PublicSubnet:
+    Description: Public Subnet ID for use by other stacks
+    Value: !Ref PublicSubnet
+    Export:
+      Name: !Sub '${AWS::StackName}-PublicSubnet'
+  
+  InternetGateway:
+    Description: Internet Gateway ID
+    Value: !Ref InternetGateway
+    Export:
+      Name: !Sub '${AWS::StackName}-IGW'
+  
+  PublicRouteTable:
+    Description: Public Route Table ID
+    Value: !Ref PublicRouteTable
+    Export:
+      Name: !Sub '${AWS::StackName}-PublicRouteTable'
+  
+  VPCCidr:
+    Description: VPC CIDR Block
+    Value: !GetAtt VPC.CidrBlock
+    Export:
+      Name: !Sub '${AWS::StackName}-VPCCidr'

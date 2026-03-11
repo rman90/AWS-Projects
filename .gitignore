@@ -1,0 +1,46 @@
+# AWS CloudFormation
+*.swp
+*~
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+
+# AWS credentials (never commit!)
+.aws/
+credentials
+config
+
+# Environment variables
+.env
+.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+Thumbs.db
+.DS_Store
+
+# CloudFormation outputs
+outputs.json
+stack-outputs.txt

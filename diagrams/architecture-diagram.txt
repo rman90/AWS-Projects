@@ -1,0 +1,259 @@
+# Daily Agenda Infrastructure - Architecture Diagram
+
+## High-Level Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                                                                         │
+│                            INTERNET                                     │
+│                                                                         │
+└────────────────────────────────┬────────────────────────────────────────┘
+                                 │
+                                 │ HTTP (Port 80)
+                                 │
+┌────────────────────────────────▼────────────────────────────────────────┐
+│                                                                         │
+│                       INTERNET GATEWAY                                  │
+│                         (AWS Managed)                                   │
+│                                                                         │
+└────────────────────────────────┬────────────────────────────────────────┘
+                                 │
+┌────────────────────────────────▼────────────────────────────────────────┐
+│                                                                         │
+│                    VPC (10.0.0.0/16)                                    │
+│                                                                         │
+│  ┌───────────────────────────────────────────────────────────────────┐ │
+│  │                                                                   │ │
+│  │              PUBLIC SUBNET (10.0.0.0/24)                          │ │
+│  │                   Availability Zone: us-east-1a                   │ │
+│  │                                                                   │ │
+│  │  ┌─────────────────────────────────────────────────────────────┐ │ │
+│  │  │                                                             │ │ │
+│  │  │         SECURITY GROUP (WebServerSecurityGroup)             │ │ │
+│  │  │                                                             │ │ │
+│  │  │  Inbound Rules:                                             │ │ │
+│  │  │  • HTTP (80) from 0.0.0.0/0                                 │ │ │
+│  │  │                                                             │ │ │
+│  │  │  Outbound Rules:                                            │ │ │
+│  │  │  • HTTP (80) to 0.0.0.0/0                                   │ │ │
+│  │  │  • HTTPS (443) to 0.0.0.0/0                                 │ │ │
+│  │  │                                                             │ │ │
+│  │  │  ┌───────────────────────────────────────────────────────┐ │ │ │
+│  │  │  │                                                       │ │ │ │
+│  │  │  │         EC2 INSTANCE (t2.micro)                       │ │ │ │
+│  │  │  │         daily-agenda-service                          │ │ │ │
+│  │  │  │                                                       │ │ │ │
+│  │  │  │  • Amazon Linux 2                                     │ │ │ │
+│  │  │  │  • Public IP: Auto-assigned                           │ │ │ │
+│  │  │  │  • IAM Role: ec2ssm                                   │ │ │ │
+│  │  │  │                                                       │ │ │ │
+│  │  │  │  ┌─────────────────────────────────────────────────┐ │ │ │ │
+│  │  │  │  │                                                 │ │ │ │ │
+│  │  │  │  │        APPLICATION STACK                        │ │ │ │ │
+│  │  │  │  │                                                 │ │ │ │ │
+│  │  │  │  │  • Apache HTTP Server (httpd)                   │ │ │ │ │
+│  │  │  │  │  • PHP Runtime                                  │ │ │ │ │
+│  │  │  │  │  • index.html (Frontend)                        │ │ │ │ │
+│  │  │  │  │  • content.php (Backend)                        │ │ │ │ │
+│  │  │  │  │                                                 │ │ │ │ │
+│  │  │  │  └─────────────────────────────────────────────────┘ │ │ │ │
+│  │  │  │                                                       │ │ │ │
+│  │  │  │  ┌─────────────────────────────────────────────────┐ │ │ │ │
+│  │  │  │  │                                                 │ │ │ │ │
+│  │  │  │  │        EBS VOLUME (100 GB)                      │ │ │ │ │
+│  │  │  │  │        /dev/sdh                                 │ │ │ │ │
+│  │  │  │  │                                                 │ │ │ │ │
+│  │  │  │  └─────────────────────────────────────────────────┘ │ │ │ │
+│  │  │  │                                                       │ │ │ │
+│  │  │  └───────────────────────────────────────────────────────┘ │ │ │
+│  │  │                                                             │ │ │
+│  │  └─────────────────────────────────────────────────────────────┘ │ │
+│  │                                                                   │ │
+│  └───────────────────────────────────────────────────────────────────┘ │
+│                                                                         │
+│  ┌───────────────────────────────────────────────────────────────────┐ │
+│  │                                                                   │ │
+│  │              ROUTE TABLE (PublicRouteTable)                       │ │
+│  │                                                                   │ │
+│  │  • 10.0.0.0/16 → local                                            │ │
+│  │  • 0.0.0.0/0 → Internet Gateway                                   │ │
+│  │                                                                   │ │
+│  └───────────────────────────────────────────────────────────────────┘ │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+                                 │
+                                 │ AWS API Calls
+                                 │
+┌────────────────────────────────▼────────────────────────────────────────┐
+│                                                                         │
+│                   AWS SYSTEMS MANAGER                                   │
+│                     PARAMETER STORE                                     │
+│                                                                         │
+│  Parameter: /daily_agenda                                               │
+│  Type: StringList                                                       │
+│  Value: "Team standup,Code review,Deploy to production"                 │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+## Data Flow Diagram
+
+```
+┌──────────────┐
+│   Browser    │
+│   (Client)   │
+└──────┬───────┘
+       │
+       │ 1. HTTP GET /
+       │
+       ▼
+┌──────────────┐
+│   Internet   │
+│   Gateway    │
+└──────┬───────┘
+       │
+       │ 2. Route to VPC
+       │
+       ▼
+┌──────────────┐
+│   Security   │
+│    Group     │
+└──────┬───────┘
+       │
+       │ 3. Allow port 80
+       │
+       ▼
+┌──────────────┐
+│   Apache     │
+│  Web Server  │
+└──────┬───────┘
+       │
+       │ 4. Serve index.html
+       │
+       ▼
+┌──────────────┐
+│   Browser    │
+│  JavaScript  │
+└──────┬───────┘
+       │
+       │ 5. Fetch /content.php
+       │
+       ▼
+┌──────────────┐
+│     PHP      │
+│   Runtime    │
+└──────┬───────┘
+       │
+       │ 6. Execute AWS CLI
+       │
+       ▼
+┌──────────────┐
+│     SSM      │
+│  Parameter   │
+│    Store     │
+└──────┬───────┘
+       │
+       │ 7. Return agenda items
+       │
+       ▼
+┌──────────────┐
+│     PHP      │
+│  Processing  │
+└──────┬───────┘
+       │
+       │ 8. Generate HTML list
+       │
+       ▼
+┌──────────────┐
+│   Browser    │
+│   Display    │
+└──────────────┘
+```
+
+## Nested Stack Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│                      PARENT STACK                               │
+│                   (parent-stack.yaml)                           │
+│                                                                 │
+│  • Orchestrates nested stacks                                   │
+│  • Manages dependencies                                         │
+│  • Passes parameters between stacks                             │
+│                                                                 │
+└────────────────┬────────────────────────────────┬───────────────┘
+                 │                                │
+                 │                                │
+        ┌────────▼────────┐              ┌────────▼────────┐
+        │                 │              │                 │
+        │  NETWORK STACK  │              │ APPLICATION     │
+        │                 │              │     STACK       │
+        │ (network-stack  │              │ (application-   │
+        │    .yaml)       │              │  stack.yaml)    │
+        │                 │              │                 │
+        │  Creates:       │              │  Creates:       │
+        │  • VPC          │              │  • EC2 Instance │
+        │  • Subnets      │              │  • Security Grp │
+        │  • IGW          │              │  • EBS Volume   │
+        │  • Route Tables │              │  • SSM Param    │
+        │                 │              │                 │
+        │  Outputs:       │──────────────▶  Inputs:        │
+        │  • VPC ID       │              │  • VPC ID       │
+        │  • Subnet ID    │              │  • Subnet ID    │
+        │                 │              │                 │
+        └─────────────────┘              └─────────────────┘
+```
+
+## Security Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      DEFENSE IN DEPTH                           │
+└─────────────────────────────────────────────────────────────────┘
+
+Layer 1: Network ACL (Subnet Level)
+┌─────────────────────────────────────────────────────────────────┐
+│  • Stateless firewall                                           │
+│  • Default: Allow all (can be restricted)                       │
+└─────────────────────────────────────────────────────────────────┘
+
+Layer 2: Security Group (Instance Level)
+┌─────────────────────────────────────────────────────────────────┐
+│  • Stateful firewall                                            │
+│  • Inbound: HTTP (80) from 0.0.0.0/0                            │
+│  • Outbound: HTTP (80), HTTPS (443)                             │
+└─────────────────────────────────────────────────────────────────┘
+
+Layer 3: IAM Role (Application Level)
+┌─────────────────────────────────────────────────────────────────┐
+│  • Least privilege access                                       │
+│  • SSM Parameter Store read-only                                │
+│  • No hardcoded credentials                                     │
+└─────────────────────────────────────────────────────────────────┘
+
+Layer 4: Application (Code Level)
+┌─────────────────────────────────────────────────────────────────┐
+│  • Input validation                                             │
+│  • Error handling                                               │
+│  • Secure coding practices                                      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Notes
+
+This is a text-based representation of the architecture. For a visual diagram:
+
+1. Use draw.io (https://app.diagrams.net/)
+2. Use Lucidchart (https://www.lucidchart.com/)
+3. Use AWS Architecture Icons (https://aws.amazon.com/architecture/icons/)
+4. Use CloudCraft (https://www.cloudcraft.co/)
+
+To create a professional diagram:
+1. Import AWS architecture icons
+2. Arrange components as shown in the text diagram
+3. Add arrows to show data flow
+4. Use colors to distinguish layers (network, compute, security)
+5. Export as PNG and save to diagrams/architecture-diagram.png
