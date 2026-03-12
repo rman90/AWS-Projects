@@ -525,7 +525,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Ross Nesbitt**
 
 - GitHub: [@rman90](https://github.com/rman90)
-- LinkedIn: [Connect with me](www.linkedin.com/in/ross-nesbitt-395647138)
+- LinkedIn: [Connect with me](https//www.linkedin.com/in/ross-nesbitt-395647138)
 - Portfolio: [View my projects](https://github.com/rman90)
 
 ---
