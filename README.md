@@ -304,14 +304,8 @@ http://ec2-54-123-45-67.us-west-2.compute.amazonaws.com
 
 ## 📸 Screenshots
 
-### CloudFormation Stack Creation
-![Stack Creation](diagrams/stack-creation.png)
-
 ### Daily Agenda Website
 ![Daily Agenda](diagrams/daily-agenda-website.png)
-
-### Nested Stack Architecture
-![Nested Stacks](diagrams/nested-stack-view.png)
 
 ---
 
