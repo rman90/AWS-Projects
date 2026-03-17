@@ -1,0 +1,147 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0" version="29.6.1">
+  <diagram name="Nested Stack Hierarchy" id="nested">
+    <mxGraphModel dx="745" dy="440" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" value="Nested Stack Architecture" vertex="1">
+          <mxGeometry height="30" width="360" x="400" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="parent" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1;verticalAlign=top;align=center;spacingTop=10;" value="Parent Stack&#xa;parent-stack.yaml&#xa;&#xa;Orchestrates nested stacks&#xa;Manages dependencies&#xa;Passes parameters between stacks" vertex="1">
+          <mxGeometry height="140" width="520" x="320" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="parent-icon" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=40;" value="🎯" vertex="1">
+          <mxGeometry height="50" width="50" x="350" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="network" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;verticalAlign=top;align=center;spacingTop=10;" value="Network Stack&#xa;network-stack.yaml" vertex="1">
+          <mxGeometry height="320" width="280" x="200" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="network-icon" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=30;" value="🌐" vertex="1">
+          <mxGeometry height="40" width="50" x="315" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="net-resources" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1" value="Creates:" vertex="1">
+          <mxGeometry height="20" width="240" x="220" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="net-vpc" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="• VPC (10.0.0.0/16)" vertex="1">
+          <mxGeometry height="20" width="220" x="230" y="455" as="geometry" />
+        </mxCell>
+        <mxCell id="net-subnet" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="• Public Subnet (10.0.0.0/24)" vertex="1">
+          <mxGeometry height="20" width="220" x="230" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="net-igw" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="• Internet Gateway" vertex="1">
+          <mxGeometry height="20" width="220" x="230" y="505" as="geometry" />
+        </mxCell>
+        <mxCell id="net-rt" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="• Route Tables" vertex="1">
+          <mxGeometry height="20" width="220" x="230" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="net-routes" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="• Routes (0.0.0.0/0 → IGW)" vertex="1">
+          <mxGeometry height="20" width="220" x="230" y="555" as="geometry" />
+        </mxCell>
+        <mxCell id="net-outputs" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;fontStyle=1;align=left;spacingLeft=5;" value="Outputs:" vertex="1">
+          <mxGeometry height="50" width="240" x="220" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="net-out1" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" value="• VPC ID" vertex="1">
+          <mxGeometry height="10" width="220" x="290" y="622.5" as="geometry" />
+        </mxCell>
+        <mxCell id="net-out2" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" value="• Subnet ID" vertex="1">
+          <mxGeometry height="15" width="220" x="230" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="app" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;fontStyle=1;verticalAlign=top;align=center;spacingTop=10;" value="Application Stack&#xa;application-stack.yaml" vertex="1">
+          <mxGeometry height="320" width="280" x="680" y="345" as="geometry" />
+        </mxCell>
+        <mxCell id="oKqKqACHqHPiOgl9IsTz-9" edge="1" parent="1" source="app-inputs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="820" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="app-inputs" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;fontStyle=1;align=left;spacingLeft=5;" value="Inputs:" vertex="1">
+          <mxGeometry height="67.5" width="240" x="700" y="422.5" as="geometry" />
+        </mxCell>
+        <mxCell id="app-in1" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" value="• VPC ID (from Network Stack)" vertex="1">
+          <mxGeometry height="15" width="220" x="700" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="oKqKqACHqHPiOgl9IsTz-10" edge="1" parent="1" source="app-in2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" target="app-in1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="app-in2" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" value="• Subnet ID (from Network Stack)" vertex="1">
+          <mxGeometry height="15" width="220" x="700" y="475" as="geometry" />
+        </mxCell>
+        <mxCell id="app-resources" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1" value="Creates:" vertex="1">
+          <mxGeometry height="20" width="240" x="700" y="495" as="geometry" />
+        </mxCell>
+        <mxCell id="app-ec2" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="• EC2 Instance (t2.micro)" vertex="1">
+          <mxGeometry height="20" width="220" x="710" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="app-sg" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="• Security Group" vertex="1">
+          <mxGeometry height="20" width="220" x="710" y="545" as="geometry" />
+        </mxCell>
+        <mxCell id="app-ebs" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="• EBS Volume (100 GB)" vertex="1">
+          <mxGeometry height="20" width="220" x="710" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="app-ssm" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="• SSM Parameter" vertex="1">
+          <mxGeometry height="20" width="220" x="710" y="595" as="geometry" />
+        </mxCell>
+        <mxCell id="app-apache" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="• Apache + PHP + Application" vertex="1">
+          <mxGeometry height="20" width="220" x="710" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow1" edge="1" parent="1" source="parent" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;endFill=1;strokeColor=#82b366;" target="network">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow1-label" connectable="0" parent="arrow1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1" value="Creates" vertex="1">
+          <mxGeometry relative="1" x="-0.2" y="2" as="geometry">
+            <mxPoint x="-20" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow2" edge="1" parent="1" source="parent" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;endArrow=classic;endFill=1;strokeColor=#d79b00;" target="app">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow2-label" connectable="0" parent="arrow2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1" value="Creates" vertex="1">
+          <mxGeometry relative="1" x="-0.2" y="2" as="geometry">
+            <mxPoint x="20" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow3" edge="1" parent="1" source="net-outputs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;endArrow=classic;endFill=1;strokeColor=#d6b656;dashed=1;dashPattern=8 8;" target="app-inputs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow3-label" connectable="0" parent="arrow3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontStyle=1;backgroundColor=#ffffff;" value="Passes VPC ID &amp; Subnet ID" vertex="1">
+          <mxGeometry relative="1" x="-0.1" y="1" as="geometry">
+            <mxPoint x="-109" y="-19" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="benefits" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=5;fontColor=#333333;" value="Benefits of Nested Stacks" vertex="1">
+          <mxGeometry height="80" width="760" x="200" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="ben1" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="✓ Modular Architecture" vertex="1">
+          <mxGeometry height="20" width="180" x="220" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="ben2" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="✓ Reusable Components" vertex="1">
+          <mxGeometry height="20" width="180" x="220" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="ben3" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="✓ Easier Maintenance" vertex="1">
+          <mxGeometry height="20" width="180" x="420" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="ben4" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="✓ Separation of Concerns" vertex="1">
+          <mxGeometry height="20" width="180" x="420" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="ben5" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="✓ Team Collaboration" vertex="1">
+          <mxGeometry height="20" width="180" x="620" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="ben6" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="✓ Scalable Design" vertex="1">
+          <mxGeometry height="20" width="180" x="620" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="oKqKqACHqHPiOgl9IsTz-2" parent="1" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#8C4FFF;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.vpc;" value="" vertex="1">
+          <mxGeometry height="47" width="47" x="315" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="oKqKqACHqHPiOgl9IsTz-3" parent="1" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ec2;" value="" vertex="1">
+          <mxGeometry height="35" width="35" x="700" y="362.5" as="geometry" />
+        </mxCell>
+        <mxCell id="oKqKqACHqHPiOgl9IsTz-4" parent="1" style="outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.volume;fillColor=#E05243;gradientColor=none;" value="" vertex="1">
+          <mxGeometry height="25" width="20" x="780" y="397.5" as="geometry" />
+        </mxCell>
+        <mxCell id="oKqKqACHqHPiOgl9IsTz-8" edge="1" parent="1" source="app-inputs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" target="app-inputs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
